@@ -1,0 +1,37 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.CyberPunk11147/cyberwarex-voice-stt",
+  "description": "MCP server for CyberWareX Voice-to-Text: speech-to-text transcription for agents. Tool: voice_transcribe.",
+  "version": "1.0.0",
+  "repository": {
+    "url": "https://github.com/CyberPunk11147/cyberwarex-mcp",
+    "source": "github",
+    "subfolder": "voice-stt"
+  },
+  "websiteUrl": "https://cyberwarex.com",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "registryBaseUrl": "https://github.com/CyberPunk11147/cyberwarex-mcp",
+      "identifier": "cyberwarex-voice-stt",
+      "version": "1.0.0",
+      "runtimeHint": "python",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "VOICE_X_PAYMENT",
+          "description": "Optional x402 X-PAYMENT header. If unset, the server surfaces the 402 invoice to the agent so its own x402 client can pay and retry.",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
+          "name": "VOICE_BASE_URL",
+          "description": "Override the default service URL (https://voice.cyberwarex.com).",
+          "isRequired": false
+        }
+      ]
+    }
+  ]
+}

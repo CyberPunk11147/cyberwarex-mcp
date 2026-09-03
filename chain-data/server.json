@@ -1,0 +1,37 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.CyberPunk11147/cyberwarex-chain-data",
+  "description": "MCP server for the CyberWareX Onchain Query API: EVM wallet balances, token info, price, gas, transactions and ENS across 5 chains. Tools: chain_wallet, chain_token, chain_price, chain_gas, chain_tx, chain_ens.",
+  "version": "1.0.0",
+  "repository": {
+    "url": "https://github.com/CyberPunk11147/cyberwarex-mcp",
+    "source": "github",
+    "subfolder": "chain-data"
+  },
+  "websiteUrl": "https://cyberwarex.com",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "registryBaseUrl": "https://github.com/CyberPunk11147/cyberwarex-mcp",
+      "identifier": "cyberwarex-chain-data",
+      "version": "1.0.0",
+      "runtimeHint": "python",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "CHAIN_X_PAYMENT",
+          "description": "Optional x402 X-PAYMENT header. If unset, the server surfaces the 402 invoice to the agent so its own x402 client can pay and retry.",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
+          "name": "CHAIN_BASE_URL",
+          "description": "Override the default service URL (https://chain.cyberwarex.com).",
+          "isRequired": false
+        }
+      ]
+    }
+  ]
+}

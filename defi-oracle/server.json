@@ -1,0 +1,37 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.CyberPunk11147/cyberwarex-defi-oracle",
+  "description": "MCP server for the CyberWareX DeFi Safety Oracle: deterministic buy/sell honeypot + transfer-tax simulation, contract-power analysis, and A-F token safety grades for Base and BSC. Tools: token_safety, honeypot_check, contract_risk.",
+  "version": "1.0.0",
+  "repository": {
+    "url": "https://github.com/CyberPunk11147/cyberwarex-mcp",
+    "source": "github",
+    "subfolder": "defi-oracle"
+  },
+  "websiteUrl": "https://cyberwarex.com",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "registryBaseUrl": "https://github.com/CyberPunk11147/cyberwarex-mcp",
+      "identifier": "cyberwarex-defi-oracle",
+      "version": "1.0.0",
+      "runtimeHint": "python",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "DSO_X_PAYMENT",
+          "description": "Optional x402 X-PAYMENT header. If unset, the server surfaces the 402 invoice to the agent so its own x402 client can pay and retry.",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
+          "name": "DSO_BASE_URL",
+          "description": "Override the default service URL (https://oracle.cyberwarex.com).",
+          "isRequired": false
+        }
+      ]
+    }
+  ]
+}
