@@ -40,9 +40,16 @@ CHAINS = ["base", "ethereum", "arbitrum", "optimism", "polygon"]
 
 
 def _headers() -> dict:
-    h = {"Accept": "application/json"}
+    h = {"Accept": "application/json",
+         # Cloudflare 403s some default library UAs on our API hosts — always identify.
+         "User-Agent": "cyberwarex-mcp/1.0 (+https://cyberwarex.com)"}
     if X_PAYMENT:
         h["X-PAYMENT"] = X_PAYMENT
+    else:
+        # No payment configured -> opt into the service free trial so an evaluator\'s
+        # FIRST calls return REAL DATA instead of a paywall. Without this the very first
+        # MCP tool call an evaluator makes returns a 402 and they never see the product.
+        h["X-Free-Trial"] = "1"
     return h
 
 
