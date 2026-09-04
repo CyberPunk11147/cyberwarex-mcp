@@ -50,13 +50,21 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build & push image
-        run: |
-          IMG="ghcr.io/${{ steps.meta.outputs.owner_lc }}/cyberwarex-${{ matrix.server }}"
-          V="${{ steps.meta.outputs.version }}"
-          docker build -t "$IMG:$V" -t "$IMG:latest" "${{ matrix.server }}"
-          docker push "$IMG:$V"
-          docker push "$IMG:latest"
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build & push image (marker as MANIFEST annotation, not just a config label)
+        uses: docker/build-push-action@v6
+        with:
+          context: ./${{ matrix.server }}
+          push: true
+          provenance: false   # keep a single image manifest so the annotation lands where the registry reads it
+          sbom: false
+          tags: |
+            ghcr.io/${{ steps.meta.outputs.owner_lc }}/cyberwarex-${{ matrix.server }}:${{ steps.meta.outputs.version }}
+            ghcr.io/${{ steps.meta.outputs.owner_lc }}/cyberwarex-${{ matrix.server }}:latest
+          annotations: |
+            io.modelcontextprotocol.server.name=io.github.CyberPunk11147/cyberwarex-${{ matrix.server }}
 
       - name: Pin version + image tag into server.json
         run: |
