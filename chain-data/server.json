@@ -11,11 +11,8 @@
   "websiteUrl": "https://cyberwarex.com",
   "packages": [
     {
-      "registryType": "pypi",
-      "registryBaseUrl": "https://github.com/CyberPunk11147/cyberwarex-mcp",
-      "identifier": "cyberwarex-chain-data",
-      "version": "1.0.0",
-      "runtimeHint": "python",
+      "registryType": "oci",
+      "identifier": "ghcr.io/cyberpunk11147/cyberwarex-chain-data:1.0.0",
       "transport": {
         "type": "stdio"
       },

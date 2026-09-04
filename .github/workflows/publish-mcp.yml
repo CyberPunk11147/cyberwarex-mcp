@@ -1,0 +1,78 @@
+name: Publish to MCP Registry
+
+# Build each MCP server as an OCI image on ghcr.io (verified by the
+# io.modelcontextprotocol.server.name LABEL), then publish its server.json to the
+# official MCP Registry using GitHub OIDC (no stored secret needed for io.github.* names).
+#
+# Trigger: push a version tag, e.g.  git tag v1.0.0 && git push origin v1.0.0
+# (or run manually via "Run workflow" and supply a version).
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to publish (e.g. 1.0.0)"
+        required: true
+        default: "1.0.0"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write   # OIDC for mcp-publisher (proves the io.github.<owner> namespace)
+      contents: read
+      packages: write    # push images to ghcr.io with GITHUB_TOKEN
+    strategy:
+      fail-fast: false
+      matrix:
+        server: [defi-oracle, chain-data, voice-stt, web-access]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Derive version + lowercase owner
+        id: meta
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/v}"
+          else
+            VERSION="${{ github.event.inputs.version }}"
+          fi
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "owner_lc=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to ghcr.io
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & push image
+        run: |
+          IMG="ghcr.io/${{ steps.meta.outputs.owner_lc }}/cyberwarex-${{ matrix.server }}"
+          V="${{ steps.meta.outputs.version }}"
+          docker build -t "$IMG:$V" -t "$IMG:latest" "${{ matrix.server }}"
+          docker push "$IMG:$V"
+          docker push "$IMG:latest"
+
+      - name: Pin version + image tag into server.json
+        run: |
+          cd "${{ matrix.server }}"
+          V="${{ steps.meta.outputs.version }}"
+          jq --arg v "$V" '.version=$v | .packages[0].identifier = (.packages[0].identifier | sub(":[^:/]+$"; ":"+$v))' server.json > s.tmp && mv s.tmp server.json
+          cat server.json
+
+      - name: Install mcp-publisher
+        run: |
+          curl -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
+
+      - name: Authenticate to MCP Registry (GitHub OIDC)
+        run: ./mcp-publisher login github-oidc
+
+      - name: Publish server to MCP Registry
+        run: |
+          cd "${{ matrix.server }}"
+          ../mcp-publisher publish
