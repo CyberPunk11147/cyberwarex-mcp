@@ -1,7 +1,7 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.CyberPunk11147/cyberwarex-chain-data",
-  "description": "MCP server for the CyberWareX Onchain Query API: EVM wallet balances, token info, price, gas, transactions and ENS across 5 chains. Tools: chain_wallet, chain_token, chain_price, chain_gas, chain_tx, chain_ens.",
+  "description": "EVM onchain data: wallet, token, price, gas, transactions, ENS across 5 chains.",
   "version": "1.0.0",
   "repository": {
     "url": "https://github.com/CyberPunk11147/cyberwarex-mcp",
