@@ -1,0 +1,29 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.CyberPunk11147/cyberwarex-wallet-safety",
+  "description": "Pre-sign wallet safety: tx simulation, signature decoding, address risk, ABI, URL phishing.",
+  "version": "1.0.0",
+  "repository": {
+    "url": "https://github.com/CyberPunk11147/cyberwarex-mcp",
+    "source": "github",
+    "subfolder": "wallet-safety"
+  },
+  "websiteUrl": "https://cyberwarex.com",
+  "packages": [
+    {
+      "registryType": "oci",
+      "identifier": "ghcr.io/cyberpunk11147/cyberwarex-wallet-safety:1.0.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "CWX_X_PAYMENT",
+          "description": "Optional x402 X-PAYMENT header. If unset, the server uses each service's free trial (3 calls/day) and then surfaces the 402 invoice to the agent so its own x402 client can pay and retry.",
+          "isRequired": false,
+          "isSecret": true
+        }
+      ]
+    }
+  ]
+}

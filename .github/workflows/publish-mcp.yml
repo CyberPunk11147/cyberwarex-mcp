@@ -27,7 +27,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        server: [defi-oracle, chain-data, voice-stt, web-access]
+        server: [defi-oracle, chain-data, voice-stt, web-access, wallet-safety]
     steps:
       - name: Checkout
         uses: actions/checkout@v5

@@ -11,6 +11,7 @@ pay-per-call APIs built for AI agents. Every backing API is **live**, speaks
 | [`defi-oracle`](defi-oracle/) | `token_safety` `honeypot_check` `contract_risk` | "Is this token safe to trade?" — live buy/sell simulation, contract powers, A–F grade with evidence (Base + BSC). **3 free calls/day** with header `X-Free-Trial: 1` — try before funding a wallet | $0.02–$0.06 |
 | [`chain-data`](chain-data/) | `chain_wallet` `chain_token` `chain_price` `chain_gas` `chain_tx` `chain_ens` | EVM data across Base, Ethereum, Arbitrum, Optimism, Polygon — no RPC keys, no node | $0.002–$0.004 |
 | [`voice-stt`](voice-stt/) | `voice_transcribe` | Voice messages → text, per 10-second block | $0.015 |
+| [`wallet-safety`](wallet-safety/) | `simulate_transaction` `decode_calldata` `decode_signature_request` `address_risk` `contract_abi` `url_safety` | Pre-sign safety for wallet/trading agents: simulate a tx before signing, decode EIP-712/personal_sign requests (drainer flags), sanctions + scam-ledger address screening, verified ABI, URL phishing score. 6 chains. **3 free calls/day** per service | $0.002–$0.01 |
 
 ## Install
 
