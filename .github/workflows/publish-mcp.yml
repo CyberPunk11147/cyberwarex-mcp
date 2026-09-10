@@ -19,6 +19,9 @@ on:
 
 jobs:
   publish:
+    # Only the CyberPunk11147 repo owns the io.github.CyberPunk11147/* registry namespace (OIDC).
+    # The cyberwareX mirror gets the same tags and must NOT try to publish (403 + failure emails, 2026-09-10).
+    if: github.repository_owner == 'CyberPunk11147'
     runs-on: ubuntu-latest
     permissions:
       id-token: write   # OIDC for mcp-publisher (proves the io.github.<owner> namespace)
