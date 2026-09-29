@@ -6,6 +6,9 @@ name: Publish Agent Council to MCP Registry
 # neither workflow ever tries to publish a name it cannot prove ownership of (that combination is
 # what produced 403s and failure emails on 2026-09-10).
 #
+# REGISTRY LIMIT (hit 2026-09-29): server.json `description` must be <= 100 characters. A longer one
+# fails ONLY at the final publish step with a 422 after the image is already built and pushed.
+#
 # Trigger: push a council tag, e.g.  git tag council-v1.1.0 && git push cwx council-v1.1.0
 
 on:
