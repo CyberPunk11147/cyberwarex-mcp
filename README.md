@@ -12,6 +12,7 @@ pay-per-call APIs built for AI agents. Every backing API is **live**, speaks
 | [`chain-data`](chain-data/) | `chain_wallet` `chain_token` `chain_price` `chain_gas` `chain_tx` `chain_ens` | EVM data across Base, Ethereum, Arbitrum, Optimism, Polygon — no RPC keys, no node | $0.002–$0.004 |
 | [`voice-stt`](voice-stt/) | `voice_transcribe` | Voice messages → text, per 10-second block | $0.015 |
 | [`wallet-safety`](wallet-safety/) | `simulate_transaction` `decode_calldata` `decode_signature_request` `address_risk` `contract_abi` `url_safety` | Pre-sign safety for wallet/trading agents: simulate a tx before signing, decode EIP-712/personal_sign requests (drainer flags), sanctions + scam-ledger address screening, verified ABI, URL phishing score. 6 chains. **3 free calls/day** per service | $0.002–$0.01 |
+| [`council`](council/) | `council` `council_deep` `council_grounded` | A second opinion before your agent acts on one model's unearned confidence: 3-4 DIFFERENT models answer the same question independently, then a chair returns one verdict with `confidence`, the consensus and the `dissent` that held. The grounded tier buys the evidence first (honeypot sim, sanctions screen, page content, SEC profile, web) and itemises what it spent for you. Gate irreversible steps on confidence, not certainty. **1 free call/day** | $0.01 / $0.03 / $0.05-0.12 |
 
 ## Install
 

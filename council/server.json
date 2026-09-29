@@ -1,0 +1,40 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.CyberPunk11147/cyberwarex-council",
+  "description": "Second opinion for an agent: 3-4 different AI models answer one question, chair returns verdict + confidence + dissent.",
+  "version": "1.1.0",
+  "repository": {
+    "url": "https://github.com/CyberPunk11147/cyberwarex-mcp",
+    "source": "github",
+    "subfolder": "council"
+  },
+  "websiteUrl": "https://cyberwarex.com/assets/council-quickstart.html",
+  "packages": [
+    {
+      "registryType": "oci",
+      "identifier": "ghcr.io/cyberpunk11147/cyberwarex-council:1.1.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "CWX_X_PAYMENT",
+          "description": "Optional x402 X-PAYMENT header. If unset, the server opts into the free trial and then surfaces the 402 invoice to the agent so its own x402 client can pay and retry.",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
+          "name": "CWX_SUBSCRIPTION_KEY",
+          "description": "Optional prepaid credit key (cwx_...) from https://safe.cyberwarex.com/subscribe, so no per-call signing is needed.",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
+          "name": "CWX_COUNCIL_URL",
+          "description": "Override the default service URL (https://council.cyberwarex.com).",
+          "isRequired": false
+        }
+      ]
+    }
+  ]
+}
