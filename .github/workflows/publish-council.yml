@@ -1,39 +1,31 @@
-name: Publish to MCP Registry
+name: Publish Agent Council to MCP Registry
 
-# Build each MCP server as an OCI image on ghcr.io (verified by the
-# io.modelcontextprotocol.server.name LABEL), then publish its server.json to the
-# official MCP Registry using GitHub OIDC (no stored secret needed for io.github.* names).
+# The Agent Council MCP server, published from THIS org under the namespace this org's OIDC owns
+# (io.github.cyberwareX/*). The sibling publish-mcp.yml handles the five servers that live in the
+# io.github.CyberPunk11147/* namespace and only runs for that owner; this one is its mirror image, so
+# neither workflow ever tries to publish a name it cannot prove ownership of (that combination is
+# what produced 403s and failure emails on 2026-09-10).
 #
-# Trigger: push a version tag, e.g.  git tag v1.0.0 && git push origin v1.0.0
-# (or run manually via "Run workflow" and supply a version).
+# Trigger: push a council tag, e.g.  git tag council-v1.1.0 && git push cwx council-v1.1.0
 
 on:
   push:
-    tags: ["v*"]
+    tags: ["council-v*"]
   workflow_dispatch:
     inputs:
       version:
-        description: "Version to publish (e.g. 1.0.0)"
+        description: "Version to publish (e.g. 1.1.0)"
         required: true
-        default: "1.0.0"
+        default: "1.1.0"
 
 jobs:
   publish:
-    # Only the CyberPunk11147 repo owns the io.github.CyberPunk11147/* registry namespace (OIDC).
-    # The cyberwareX mirror gets the same tags and must NOT try to publish (403 + failure emails, 2026-09-10).
-    if: github.repository_owner == 'CyberPunk11147'
+    if: github.repository_owner == 'cyberwareX'
     runs-on: ubuntu-latest
     permissions:
       id-token: write   # OIDC for mcp-publisher (proves the io.github.<owner> namespace)
       contents: read
-      packages: write    # push images to ghcr.io with GITHUB_TOKEN
-    strategy:
-      fail-fast: false
-      matrix:
-        server: [defi-oracle, chain-data, voice-stt, web-access, wallet-safety]
-        # council is NOT here: it is published from the cyberwareX repo under the
-        # io.github.cyberwareX/* namespace by publish-council.yml, because that is the
-        # namespace this org's OIDC actually owns. One server, one publishing owner.
+      packages: write   # push the image to ghcr.io with GITHUB_TOKEN
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -41,8 +33,8 @@ jobs:
       - name: Derive version + lowercase owner
         id: meta
         run: |
-          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
-            VERSION="${GITHUB_REF#refs/tags/v}"
+          if [[ "${GITHUB_REF}" == refs/tags/council-v* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/council-v}"
           else
             VERSION="${{ github.event.inputs.version }}"
           fi
@@ -62,19 +54,19 @@ jobs:
       - name: Build & push image (marker as MANIFEST annotation, not just a config label)
         uses: docker/build-push-action@v6
         with:
-          context: ./${{ matrix.server }}
+          context: ./council
           push: true
-          provenance: false   # keep a single image manifest so the annotation lands where the registry reads it
+          provenance: false   # single image manifest, so the annotation lands where the registry reads it
           sbom: false
           tags: |
-            ghcr.io/${{ steps.meta.outputs.owner_lc }}/cyberwarex-${{ matrix.server }}:${{ steps.meta.outputs.version }}
-            ghcr.io/${{ steps.meta.outputs.owner_lc }}/cyberwarex-${{ matrix.server }}:latest
+            ghcr.io/${{ steps.meta.outputs.owner_lc }}/cyberwarex-council:${{ steps.meta.outputs.version }}
+            ghcr.io/${{ steps.meta.outputs.owner_lc }}/cyberwarex-council:latest
           annotations: |
-            io.modelcontextprotocol.server.name=io.github.CyberPunk11147/cyberwarex-${{ matrix.server }}
+            io.modelcontextprotocol.server.name=io.github.cyberwareX/cyberwarex-council
 
       - name: Pin version + image tag into server.json
         run: |
-          cd "${{ matrix.server }}"
+          cd council
           V="${{ steps.meta.outputs.version }}"
           jq --arg v "$V" '.version=$v | .packages[0].identifier = (.packages[0].identifier | sub(":[^:/]+$"; ":"+$v))' server.json > s.tmp && mv s.tmp server.json
           cat server.json
@@ -88,5 +80,5 @@ jobs:
 
       - name: Publish server to MCP Registry
         run: |
-          cd "${{ matrix.server }}"
+          cd council
           ../mcp-publisher publish
