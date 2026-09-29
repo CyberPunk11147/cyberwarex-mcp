@@ -2,9 +2,9 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.cyberwareX/cyberwarex-council",
   "description": "Second opinion for agents: 3-4 AI models answer, one verdict with confidence and dissent.",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "repository": {
-    "url": "https://github.com/CyberPunk11147/cyberwarex-mcp",
+    "url": "https://github.com/cyberwareX/cyberwarex-mcp",
     "source": "github",
     "subfolder": "council"
   },
@@ -12,7 +12,7 @@
   "packages": [
     {
       "registryType": "oci",
-      "identifier": "ghcr.io/cyberwarex/cyberwarex-council:1.1.1",
+      "identifier": "ghcr.io/cyberwarex/cyberwarex-council:1.1.2",
       "transport": {
         "type": "stdio"
       },
