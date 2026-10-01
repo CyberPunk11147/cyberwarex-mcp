@@ -6,7 +6,7 @@ one live x402 service (USDC on Base, no account, no API key):
     council(question)            -> 3 different models, one round  -> verdict + confidence + dissent
     council_deep(question)       -> 4 different models, two rounds of cross-examination
     council_grounded(question)   -> buys the evidence first (honeypot sim, sanctions screen, page
-                                    content, SEC profile, web), then 4 models deliberate on it
+                                    content, SEC profile, web), then one analyst judges on it
 
 Why an agent should call this: a single model answers with the same certainty whether it is right or
 guessing. A panel of different models from different labs does not agree by construction, so when it
@@ -114,7 +114,7 @@ TOOLS = [
         description="Deliberation on bought FACTS rather than on model recollection. Your question is scanned for a "
                     "contract address, a URL or a $TICKER; the matching evidence is purchased (honeypot and "
                     "owner-powers simulation, OFAC sanctions screen, the actual page content, SEC company profile, "
-                    "open web results), handed to 4 different models, and argued over two rounds. The response lists "
+                    "open web results), handed to one analyst that judges on what came back. The response lists "
                     "every source consulted and exactly what was spent on your behalf. Use it before accepting an "
                     "unknown token, counterparty, link or ticker. Priced per question, $0.05 to $0.12 in USDC: call it "
                     "unpaid first to get the itemised quote for free.",
