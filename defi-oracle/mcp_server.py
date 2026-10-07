@@ -5,6 +5,10 @@ Exposes the oracle's Base + BSC token risk checks as MCP tools so any MCP-speaki
     token_safety(address, chain)    -> full safety report (grade, honeypot, tradeable, flags+evidence)
     honeypot_check(address, chain)  -> focused buy/sell simulation (is_honeypot, taxes)
     contract_risk(address, chain)   -> contract powers (verified, proxy, owner, mint/pause/blacklist)
+    wallet_identity(address, chain) -> who is behind a wallet: age, ENS, linked X, deployer history, trust
+    x_identity(handle)              -> X/Twitter account profile: age, followers, verified, trust signals
+    token_identity(address)         -> who is behind a token: market, socials, creator wallet, rug/impersonation signals
+    identity_quick(q)               -> $0.001 taster: 0x address or @handle -> one-line trust verdict + upgrade URL
 
 Thin, stateless proxy to the HTTP service (default the public funnel URL; override with DSO_BASE_URL).
 Payment model: the service is x402-gated. This server forwards an X-PAYMENT header when the caller
@@ -47,8 +51,12 @@ def _headers() -> dict:
 
 
 def _call(path: str, address: str, chain="base") -> str:
+    return _get(path, {"address": address, "chain": chain})
+
+
+def _get(path: str, params: dict) -> str:
     try:
-        r = requests.get(f"{BASE_URL}{path}", params={"address": address, "chain": chain},
+        r = requests.get(f"{BASE_URL}{path}", params=params,
                          headers=_headers(), timeout=HTTP_TIMEOUT)
     except requests.RequestException as e:
         return json.dumps({"error": "request failed", "reason": str(e)})
@@ -129,6 +137,88 @@ TOOLS = [
             "Paid per call in USDC on Base via x402."
         ),
     ),
+    types.Tool(
+        name="wallet_identity",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "address": {"type": "string", "pattern": "^0x[a-fA-F0-9]{40}$",
+                            "description": "The wallet (EOA or contract) address to profile, 42-char hex starting with 0x."},
+                "chain": {"type": "string", "enum": ["base", "ethereum"], "default": "base",
+                          "description": "Chain to read the wallet on: 'base' (default) or 'ethereum'."},
+            },
+            "required": ["address"],
+        },
+        description=(
+            "Find out who is behind a wallet before trusting it: how old it is, how active, who first funded it, "
+            "its ENS/Basename and the X account linked on it, every token it deployed and how many we proved were "
+            "honeypots or scams (from 130k+ graded Base tokens), rug-ring funders and address-poisoning attempts. "
+            "Use it when an agent is about to send funds to, accept a deal from, or rely on an unknown address. "
+            "Returns JSON with: is_contract, first_seen, age_days, tx_count, funded_by, ens, linked_x, deployer, "
+            "signals (stable ids with severity), trust (high/medium/low/unknown) and a one-line summary. "
+            "Not charged when the wallet has no history. Paid per call in USDC on Base via x402 ($0.02)."
+        ),
+    ),
+    types.Tool(
+        name="x_identity",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "handle": {"type": "string",
+                           "description": "The X/Twitter handle to profile, with or without the leading @ (e.g. 'coinbase')."},
+            },
+            "required": ["handle"],
+        },
+        description=(
+            "Profile an X/Twitter account to judge whether a project or person is real: existence, account age, "
+            "follower/following/tweet counts, verified status and type, website, and any wallet addresses in the bio. "
+            "Use it when a token or counterparty points at an X account as proof of legitimacy. "
+            "Returns JSON with: exists, created_at, age_days, followers, verified, website, bio_addresses, signals "
+            "(e.g. NEW_ACCOUNT_BIG_FOLLOWING), trust (high/medium/low/unknown) and a summary. "
+            "Paid per call in USDC on Base via x402 ($0.01)."
+        ),
+    ),
+    types.Tool(
+        name="token_identity",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "address": {"type": "string", "pattern": "^0x[a-fA-F0-9]{40}$",
+                            "description": "The ERC-20 token contract address on Base, 42-char hex starting with 0x."},
+            },
+            "required": ["address"],
+        },
+        description=(
+            "Find out who is behind a token, not just whether it is tradeable: our safety verdict (grade, honeypot), "
+            "DexScreener market (liquidity, 24h volume, age, pair), the declared X account and website with checks "
+            "that the website actually links the contract and the same X, and the creator wallet (Clanker admin or "
+            "on-chain deployer) profiled like wallet_identity. "
+            "Use it for due diligence on a new launch before buying, listing, or promoting it. "
+            "Returns JSON with: name, symbol, safety, market, socials, creator, signals (IMPERSONATION, "
+            "WASH_TRADING, DEAD_TOKEN, CREATOR_SERIAL_RUGGER, CREATOR_RUG_RING, NO_SOCIALS...), credibility "
+            "(high/medium/low/unknown) and a summary. Base only. Not charged when nothing could be read. "
+            "Paid per call in USDC on Base via x402 ($0.05)."
+        ),
+    ),
+    types.Tool(
+        name="identity_quick",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "q": {"type": "string",
+                      "description": "A 0x address (wallet or token) or an X handle / x.com URL."},
+            },
+            "required": ["q"],
+        },
+        description=(
+            "The cheapest identity check: feed it a 0x address or an @handle and get back what kind of thing it "
+            "is, a trust-or-credibility verdict, the top 3 red-flag signals, a one-line summary and the URL of the "
+            "full endpoint to upgrade to. Uses cached full results when present, otherwise only the cheapest reads. "
+            "Use it as a first pass before deciding whether a deeper wallet_identity or token_identity call is worth it. "
+            "Returns JSON with: kind, trust_or_credibility, top_signals, summary, upgrade. "
+            "Billable only when it answered. Paid per call in USDC on Base via x402 ($0.001)."
+        ),
+    ),
 ]
 
 
@@ -141,6 +231,14 @@ def _dispatch(name: str, args: dict) -> str:
         return _call("/honeypot", a, chain)
     if name == "contract_risk":
         return _call("/contract", a, chain)
+    if name == "wallet_identity":
+        return _get("/v1/identity/wallet", {"address": a, "chain": (args or {}).get("chain", "base")})
+    if name == "x_identity":
+        return _get("/v1/identity/x", {"handle": str((args or {}).get("handle", "")).lstrip("@")})
+    if name == "token_identity":
+        return _get("/v1/identity/token", {"address": a, "chain": "base"})
+    if name == "identity_quick":
+        return _get("/v1/identity/quick", {"q": (args or {}).get("q", "")})
     return json.dumps({"error": f"unknown tool: {name}"})
 
 
