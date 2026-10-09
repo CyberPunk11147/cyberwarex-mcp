@@ -77,6 +77,54 @@ def _get(path: str, params: dict) -> str:
         return r.text
 
 
+def _crowd(path: str, chain: str, token: str) -> str:
+    """Crowd Check: get the free quote, wait until it is ready, then call the paid slice with ?quote=."""
+    import time as _t
+    qid = None
+    for _ in range(12):
+        try:
+            d = requests.get(f"{BASE_URL}/v1/holders/quote", params={"chain": chain, "token": token},
+                             headers={"User-Agent": _headers()["User-Agent"]}, timeout=HTTP_TIMEOUT).json()
+        except (requests.RequestException, ValueError) as e:
+            return json.dumps({"error": "quote failed", "reason": str(e)})
+        if d.get("status") == "ready":
+            qid = d.get("quote_id"); break
+        if d.get("status") == "error" or d.get("error"):
+            return json.dumps(d)
+        _t.sleep(8)
+    if not qid:
+        return json.dumps({"error": "quote still computing - call again in a minute (no charge)"})
+    return _get(path, {"quote": qid})
+
+
+def _verdict(chain: str, token: str) -> str:
+    import time as _t
+    for _ in range(10):
+        try:
+            r = requests.get(f"{BASE_URL}/v1/holders/verdict", params={"chain": chain, "token": token},
+                             headers=_headers(), timeout=HTTP_TIMEOUT)
+        except requests.RequestException as e:
+            return json.dumps({"error": "request failed", "reason": str(e)})
+        if r.status_code != 202:
+            break
+        _t.sleep(8)                                   # computing: not charged, the same URL is simply repeated
+    else:
+        return json.dumps({"error": "still computing - call again in a minute (no charge)"})
+    return _get("/v1/holders/verdict", {"chain": chain, "token": token})
+
+
+_CROWD = {
+    "type": "object",
+    "properties": {
+        "token": {"type": "string",
+                  "description": "The token to check: a 0x contract address (Base, Ethereum, Robinhood Chain) or a Solana mint."},
+        "chain": {"type": "string", "enum": ["base", "ethereum", "robinhood", "solana"], "default": "base",
+                  "description": "Chain the token lives on: base (default), ethereum, robinhood or solana."},
+    },
+    "required": ["token"],
+}
+
+
 _ADDR = {
     "type": "object",
     "properties": {
@@ -201,6 +249,37 @@ TOOLS = [
         ),
     ),
     types.Tool(
+        name="crowd_check_verdict",
+        inputSchema=_CROWD,
+        description=(
+            "Should I touch this token? One go/no-go answer for trading bots and agents: verdict ok / caution / avoid, "
+            "a 0-100 risk score, the top reasons, and key flags - can the liquidity be pulled, is the creator a serial "
+            "launcher behind earlier rugs, what a Uniswap v4 hook may do, how much was bought in launch bundles. "
+            "Works on Base, Ethereum, Robinhood Chain and Solana; fresh launches our hunt already checked answer instantly. "
+            "Never charged while still computing. Paid per call in USDC on Base via x402 ($0.03)."
+        ),
+    ),
+    types.Tool(
+        name="crowd_check_creator",
+        inputSchema=_CROWD,
+        description=(
+            "Who is behind this token? The creator wallet, the chain of wallets that funded it (followed up to 8 hops, "
+            "so middle wallets do not hide the source), and that chain's record with us: how many earlier tokens it "
+            "launched and how many rugged within a day. Flags serial launchers. Base, Ethereum, Robinhood Chain. "
+            "Paid per call in USDC on Base via x402 ($0.02)."
+        ),
+    ),
+    types.Tool(
+        name="crowd_check_pool",
+        inputSchema=_CROWD,
+        description=(
+            "Can this token's liquidity be pulled? Who holds the pool share (burned, an ordinary wallet, a contract, a "
+            "known fake locker), and for Uniswap v4 pools what the hook may do on every trade (take a cut, set any fee, "
+            "block sells) and whether it is a launch platform's shared hook or the creator's own code. "
+            "Paid per call in USDC on Base via x402 ($0.02)."
+        ),
+    ),
+    types.Tool(
         name="identity_quick",
         inputSchema={
             "type": "object",
@@ -237,6 +316,15 @@ def _dispatch(name: str, args: dict) -> str:
         return _get("/v1/identity/x", {"handle": str((args or {}).get("handle", "")).lstrip("@")})
     if name == "token_identity":
         return _get("/v1/identity/token", {"address": a, "chain": "base"})
+    if name in ("crowd_check_verdict", "crowd_check_creator", "crowd_check_pool"):
+        tok, ch = str((args or {}).get("token", "")).strip(), (args or {}).get("chain", "base")
+        if not tok:
+            return json.dumps({"error": "token is required"})
+        if ch != "solana":
+            tok = tok.lower()
+        if name == "crowd_check_verdict":
+            return _verdict(ch, tok)
+        return _crowd("/v1/holders/creator" if name == "crowd_check_creator" else "/v1/holders/pool", ch, tok)
     if name == "identity_quick":
         return _get("/v1/identity/quick", {"q": (args or {}).get("q", "")})
     return json.dumps({"error": f"unknown tool: {name}"})
