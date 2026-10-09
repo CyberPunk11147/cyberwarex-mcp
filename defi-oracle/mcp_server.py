@@ -280,6 +280,29 @@ TOOLS = [
         ),
     ),
     types.Tool(
+        name="paper_backtest",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "preset": {"type": "string", "enum": ["everything", "avoid_farms", "locked_pools_only", "clean_checks", "small_pools_only", "farms_only"],
+                           "default": "everything", "description": "A ready-made rule to test."},
+                "horizon": {"type": "integer", "enum": [1, 6, 24], "default": 6, "description": "Hours to hold each token."},
+                "chain": {"type": "string", "enum": ["all", "base", "solana", "ethereum"], "default": "all"},
+                "bankroll": {"type": "number", "default": 1000, "description": "Starting bankroll in USD (100 to 10000000)."},
+                "size_pct": {"type": "number", "description": "Share of equity per trade, 0.0005 to 0.05 (default 0.005)."},
+                "min_liq": {"type": "number"}, "max_liq": {"type": "number"},
+                "farm": {"type": "string", "enum": ["exclude", "only", "any"]}, "lp": {"type": "string", "enum": ["locked", "any"]},
+                "exclude_kit": {"type": "boolean"}, "max_top10": {"type": "number"}, "since_days": {"type": "integer"},
+            },
+        },
+        description=(
+            "Paper test: what would have happened if you had followed a rule on every new token Crowd Check found? Replays the rule "
+            "on our recorded outcomes with fees and price impact charged, and ALWAYS returns the same numbers for all tokens as a "
+            "baseline, plus win rate with a 95% interval, average and median return, drawdown, crash rate and a plain verdict. "
+            "Small samples are flagged. Past data only, not financial advice. Paid per call in USDC on Base via x402 ($0.05)."
+        ),
+    ),
+    types.Tool(
         name="identity_quick",
         inputSchema={
             "type": "object",
@@ -325,6 +348,13 @@ def _dispatch(name: str, args: dict) -> str:
         if name == "crowd_check_verdict":
             return _verdict(ch, tok)
         return _crowd("/v1/holders/creator" if name == "crowd_check_creator" else "/v1/holders/pool", ch, tok)
+    if name == "paper_backtest":
+        a_ = dict(args or {})
+        params = {k: v for k, v in a_.items() if k in ("preset", "horizon", "chain", "bankroll", "size_pct", "min_liq", "max_liq", "farm", "lp",
+                                                       "exclude_kit", "max_top10", "since_days") and v is not None}
+        if "exclude_kit" in params:
+            params["exclude_kit"] = "true" if params["exclude_kit"] else "false"
+        return _get("/v1/paper/backtest", params)
     if name == "identity_quick":
         return _get("/v1/identity/quick", {"q": (args or {}).get("q", "")})
     return json.dumps({"error": f"unknown tool: {name}"})
