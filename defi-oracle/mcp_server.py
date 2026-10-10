@@ -303,6 +303,40 @@ TOOLS = [
         ),
     ),
     types.Tool(
+        name="crowd_check_card",
+        inputSchema=_CROWD,
+        description=(
+            "The plain card for a token: who holds the supply, who can pull the pool, who holds powers over the token, and the largest sensible "
+            "position, under 900 characters, with a verdict go, caution or no_go. A token too new or of unknown age is never a go. Base, Ethereum, "
+            "Robinhood Chain, Solana. Not financial advice. Paid per call in USDC on Base via x402 ($0.10)."
+        ),
+    ),
+    types.Tool(
+        name="watch_start",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "chain": {"type": "string", "enum": ["base", "ethereum", "robinhood", "solana"], "default": "base"},
+                "token": {"type": "string", "description": "Token contract address (or Solana mint)."},
+                "hours": {"type": "integer", "default": 24, "description": "How long to watch, 1 to 168 hours."},
+            },
+            "required": ["token"],
+        },
+        description=(
+            "Start a watch on a token and get a ticket. Poll it with watch_poll for plain alerts: pool liquidity down 30 percent, price down 50 percent, "
+            "creator balance down 50 percent, measured from the best level since the watch began. Refused, with no charge, when the token has no market data. "
+            "Paid per call in USDC on Base via x402 ($0.10)."
+        ),
+    ),
+    types.Tool(
+        name="watch_poll",
+        inputSchema={"type": "object", "properties": {"ticket": {"type": "string", "description": "The ticket from watch_start."}}, "required": ["ticket"]},
+        description=(
+            "Ask a watch what changed since the last look. Returns plain-language alerts, or none if nothing moved. Not charged when market data is "
+            "unavailable or the watch expired. Paid per call in USDC on Base via x402 ($0.01)."
+        ),
+    ),
+    types.Tool(
         name="identity_quick",
         inputSchema={
             "type": "object",
@@ -339,7 +373,7 @@ def _dispatch(name: str, args: dict) -> str:
         return _get("/v1/identity/x", {"handle": str((args or {}).get("handle", "")).lstrip("@")})
     if name == "token_identity":
         return _get("/v1/identity/token", {"address": a, "chain": "base"})
-    if name in ("crowd_check_verdict", "crowd_check_creator", "crowd_check_pool"):
+    if name in ("crowd_check_verdict", "crowd_check_creator", "crowd_check_pool", "crowd_check_card"):
         tok, ch = str((args or {}).get("token", "")).strip(), (args or {}).get("chain", "base")
         if not tok:
             return json.dumps({"error": "token is required"})
@@ -347,7 +381,14 @@ def _dispatch(name: str, args: dict) -> str:
             tok = tok.lower()
         if name == "crowd_check_verdict":
             return _verdict(ch, tok)
-        return _crowd("/v1/holders/creator" if name == "crowd_check_creator" else "/v1/holders/pool", ch, tok)
+        return _crowd({"crowd_check_creator": "/v1/holders/creator", "crowd_check_card": "/v1/holders/card"}.get(name, "/v1/holders/pool"), ch, tok)
+    if name == "watch_start":
+        tok, ch = str((args or {}).get("token", "")).strip(), (args or {}).get("chain", "base")
+        if not tok:
+            return json.dumps({"error": "token is required"})
+        return _get("/v1/watch/start", {"chain": ch, "token": tok if ch == "solana" else tok.lower(), "hours": int((args or {}).get("hours") or 24)})
+    if name == "watch_poll":
+        return _get("/v1/watch/poll", {"ticket": str((args or {}).get("ticket", "")).strip()})
     if name == "paper_backtest":
         a_ = dict(args or {})
         params = {k: v for k, v in a_.items() if k in ("preset", "horizon", "chain", "bankroll", "size_pct", "min_liq", "max_liq", "farm", "lp",

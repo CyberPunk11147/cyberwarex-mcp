@@ -1,8 +1,8 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.CyberPunk11147/cyberwarex-defi-oracle",
-  "description": "Token safety: honeypot sim, contract powers, rug checks (creator, pool, verdict), paper test.",
-  "version": "1.4.0",
+  "description": "Token safety: honeypot sim, contract powers, rug checks, watch alerts, plain card, paper test.",
+  "version": "1.5.0",
   "repository": {
     "url": "https://github.com/CyberPunk11147/cyberwarex-mcp",
     "source": "github",
