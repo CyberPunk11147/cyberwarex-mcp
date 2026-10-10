@@ -8,11 +8,15 @@ pay-per-call APIs built for AI agents. Every backing API is **live**, speaks
 | Server | Tools | What it does | Price |
 |---|---|---|---|
 | [`web-access`](web-access/) | `web_fetch` `web_extract` `web_screenshot` `web_pdf` | Live web pages as LLM-ready markdown, CSS extraction, screenshots, PDFs | $0.005–$0.01 |
-| [`defi-oracle`](defi-oracle/) | `token_safety` `honeypot_check` `contract_risk` `wallet_identity` `x_identity` `token_identity` `identity_quick` | "Is this token safe to trade?" — live buy/sell simulation, contract powers, A–F grade with evidence (Base + BSC). **New: Crypto Identity Graph** — who is behind a wallet, token or X account (age, ENS, linked X, creator history, impersonation/rug signals from 130k+ graded tokens). **3 free calls/day** with header `X-Free-Trial: 1` — try before funding a wallet | $0.001–$0.06 |
+| [`defi-oracle`](defi-oracle/) | `token_safety` `honeypot_check` `contract_risk` `wallet_identity` `x_identity` `token_identity` `identity_quick` `crowd_check_verdict` `crowd_check_card` `watch_start` `watch_poll` | "Is this token safe to trade?" — live buy/sell simulation, contract powers, A–F grade with evidence (Base + BSC). **New: Crypto Identity Graph** — who is behind a wallet, token or X account (age, ENS, linked X, creator history, impersonation/rug signals from 130k+ graded tokens). **3 free calls/day** with header `X-Free-Trial: 1` — try before funding a wallet | $0.001–$0.06 |
 | [`chain-data`](chain-data/) | `chain_wallet` `chain_token` `chain_price` `chain_gas` `chain_tx` `chain_ens` | EVM data across Base, Ethereum, Arbitrum, Optimism, Polygon — no RPC keys, no node | $0.002–$0.004 |
 | [`voice-stt`](voice-stt/) | `voice_transcribe` | Voice messages → text, per 10-second block | $0.015 |
 | [`wallet-safety`](wallet-safety/) | `simulate_transaction` `decode_calldata` `decode_signature_request` `address_risk` `contract_abi` `url_safety` | Pre-sign safety for wallet/trading agents: simulate a tx before signing, decode EIP-712/personal_sign requests (drainer flags), sanctions + scam-ledger address screening, verified ABI, URL phishing score. 6 chains. **3 free calls/day** per service | $0.002–$0.01 |
 | [`council`](council/) | `council` `council_deep` `council_grounded` | A second opinion before your agent acts on one model's unearned confidence: 3-4 DIFFERENT models answer the same question independently, then a chair returns one verdict with `confidence`, the consensus and the `dissent` that held. The grounded tier buys the evidence first (honeypot sim, sanctions screen, page content, SEC profile, web) and itemises what it spent for you. Gate irreversible steps on confidence, not certainty. **1 free call/day** | $0.01 / $0.03 / $0.05-0.12 |
+
+## Recipe: verdict before the swap, watch after the buy
+
+A runnable x402 example for trading agents: [`recipes/swap_guard.py`](recipes/swap_guard.py). One call says go, caution or avoid before the swap ($0.03); after the buy a watch alerts on a pool drain or a price collapse ($0.10 to start, $0.01 a poll). First calls can be tried free with `X-Free-Trial: 1` (3 a day per IP). Not financial advice.
 
 ## Install
 
