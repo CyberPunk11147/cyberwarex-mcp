@@ -3,7 +3,7 @@
 Needs: pip install "x402[requests]" eth-account ; a Base wallet holding a little USDC; PRIVATE_KEY in the environment.
 Run:   PRIVATE_KEY=0x... python swap_guard.py base 0xTOKEN
 Try first, free: send the header X-Free-Trial: 1 (3 calls a day per IP, no wallet needed) with plain requests to see the answers before you wire a wallet.
-Cost:  verdict $0.03, then (only if you buy) watch start $0.10, then $0.01 per poll. Nothing is charged for a quote, a computing answer or a bad request.
+Cost:  verdict $0.01, then (only if you buy) watch start $0.10, then $0.01 per poll. Nothing is charged for a quote, a computing answer or a bad request.
 Not financial advice. A "go" means three questions came back clean, not that the token will rise.
 """
 import os
