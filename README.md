@@ -7,7 +7,7 @@ pay-per-call APIs built for AI agents. Every backing API is **live**, speaks
 
 | Server | Tools | What it does | Price |
 |---|---|---|---|
-| [`web-access`](web-access/) | `web_fetch` `web_extract` `web_screenshot` `web_pdf` | Live web pages as LLM-ready markdown, CSS extraction, screenshots, PDFs | $0.005–$0.01 |
+| [`web-access`](web-access/) | `web_fetch` `web_extract` `web_screenshot` `web_pdf` | Live web pages as LLM-ready markdown, CSS extraction, screenshots, PDFs | $0.001–$0.005 |
 | [`defi-oracle`](defi-oracle/) | `token_safety` `honeypot_check` `contract_risk` `wallet_identity` `x_identity` `token_identity` `identity_quick` `crowd_check_verdict` `crowd_check_card` `watch_start` `watch_poll` | "Is this token safe to trade?" — live buy/sell simulation, contract powers, A–F grade with evidence (Base + BSC). **New: Crypto Identity Graph** — who is behind a wallet, token or X account (age, ENS, linked X, creator history, impersonation/rug signals from 130k+ graded tokens). **3 free calls/day** with header `X-Free-Trial: 1` — try before funding a wallet | $0.001–$0.06 |
 | [`chain-data`](chain-data/) | `chain_wallet` `chain_token` `chain_price` `chain_gas` `chain_tx` `chain_ens` | EVM data across Base, Ethereum, Arbitrum, Optimism, Polygon — no RPC keys, no node | $0.002–$0.004 |
 | [`voice-stt`](voice-stt/) | `voice_transcribe` | Voice messages → text, per 10-second block | $0.015 |
