@@ -5,6 +5,20 @@ pay-per-call APIs built for AI agents. Every backing API is **live**, speaks
 [x402](https://docs.x402.org) (HTTP 402 → pay USDC on Base → result), and needs
 **no account and no API key**: the first paid call is the entire onboarding.
 
+## Hosted: web search + page reader in one URL (no install)
+
+`https://search.cyberwarex.com/mcp` (MCP Streamable HTTP). Tools: `web_search`, `read_page` (HTML or PDF to
+markdown), `search_and_read`, `web_search_batch` (10 queries, one payment), `news`, `answer`. 3 free calls a day,
+then $0.002-$0.03 a call in USDC on Base via x402, or a prepaid `cwx_` key in the `X-Subscription-Key` header.
+
+Claude Code: `claude mcp add --transport http cyberwarex-search https://search.cyberwarex.com/mcp`
+
+Cursor (`~/.cursor/mcp.json`) and Windsurf (`~/.codeium/windsurf/mcp_config.json`, key `serverUrl`):
+
+```json
+{"mcpServers": {"cyberwarex-search": {"url": "https://search.cyberwarex.com/mcp"}}}
+```
+
 | Server | Tools | What it does | Price |
 |---|---|---|---|
 | [`web-access`](web-access/) | `web_fetch` `web_extract` `web_screenshot` `web_pdf` `telegram_search` `telegram_lookup` `telegram_check` `social_profile` `company_profile` | Read any web page as LLM-ready markdown (JavaScript sites too), CSS extraction, screenshots, PDFs. **Telegram search API**: find public Telegram channels, groups and bots for a topic, look up any public @name with its latest posts, check if a channel is alive or inflated, no Telegram account. Public X, TikTok, Instagram, Facebook, LinkedIn profiles and company cards by domain | $0.001–$0.01 |
