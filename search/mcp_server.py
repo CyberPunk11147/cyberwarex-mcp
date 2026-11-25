@@ -178,7 +178,7 @@ TOOLS = [
     ),
     types.Tool(
         name="search_answer",
-        description="One grounded answer to a question, with the sources it was drawn from. $0.03/call.",
+        description="One grounded answer to a question, with the sources it was drawn from. $0.01/call.",
         inputSchema={"type": "object", "required": ["q"], "properties": {
             "q": {"type": "string", "description": "Question to answer"},
         }},
