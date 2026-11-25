@@ -1,0 +1,19 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.CyberPunk11147/cyberwarex-domain-intel",
+  "title": "Domain risk verdict + DNS, RDAP, TLS facts, pay per call (x402)",
+  "description": "Is this domain safe? Risk verdict from DNS, RDAP age and TLS cert, 20 per call. No key: x402.",
+  "version": "1.0.0",
+  "repository": {
+    "url": "https://github.com/CyberPunk11147/cyberwarex-mcp",
+    "source": "github",
+    "subfolder": "domain"
+  },
+  "websiteUrl": "https://domain.cyberwarex.com/",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://domain.cyberwarex.com/mcp"
+    }
+  ]
+}

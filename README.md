@@ -19,6 +19,19 @@ Cursor (`~/.cursor/mcp.json`) and Windsurf (`~/.codeium/windsurf/mcp_config.json
 {"mcpServers": {"cyberwarex-search": {"url": "https://search.cyberwarex.com/mcp"}}}
 ```
 
+## Hosted: domain risk verdict + DNS, RDAP, TLS facts (no install)
+
+`https://domain.cyberwarex.com/mcp` (MCP Streamable HTTP). Tools: `domain_score` (risk 0-100, low/medium/high
+with plain reasons, from DNS, RDAP age and the TLS certificate), `domain_score_batch` (up to 20 domains, one
+payment), `dns_records`, `rdap_lookup`, `ssl_certificate`. $0.002-$0.04 a call in USDC on Base via x402; an unpaid
+call returns the invoice in the tool error.
+
+Claude Code: `claude mcp add --transport http cyberwarex-domain https://domain.cyberwarex.com/mcp`
+
+```json
+{"mcpServers": {"cyberwarex-domain": {"url": "https://domain.cyberwarex.com/mcp"}}}
+```
+
 | Server | Tools | What it does | Price |
 |---|---|---|---|
 | [`web-access`](web-access/) | `web_fetch` `web_extract` `web_screenshot` `web_pdf` `telegram_search` `telegram_lookup` `telegram_check` `social_profile` `company_profile` | Read any web page as LLM-ready markdown (JavaScript sites too), CSS extraction, screenshots, PDFs. **Telegram search API**: find public Telegram channels, groups and bots for a topic, look up any public @name with its latest posts, check if a channel is alive or inflated, no Telegram account. Public X, TikTok, Instagram, Facebook, LinkedIn profiles and company cards by domain | $0.001–$0.01 |
