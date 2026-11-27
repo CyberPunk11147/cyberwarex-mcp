@@ -1,6 +1,6 @@
 # CyberWareX MCP Servers
 
-MCP (Model Context Protocol) servers for the [CyberWareX](https://cyberwarex.com) suite —
+MCP (Model Context Protocol) servers for the [CyberWareX](https://cyberwarex.com) suite -
 pay-per-call APIs built for AI agents. Every backing API is **live**, speaks
 [x402](https://docs.x402.org) (HTTP 402 → pay USDC on Base → result), and needs
 **no account and no API key**: the first paid call is the entire onboarding.
@@ -32,12 +32,21 @@ Claude Code: `claude mcp add --transport http cyberwarex-domain https://domain.c
 {"mcpServers": {"cyberwarex-domain": {"url": "https://domain.cyberwarex.com/mcp"}}}
 ```
 
+## Hosted: token verdict before a trade (no install)
+
+`https://oracle.cyberwarex.com/mcp` (MCP Streamable HTTP). Tools: `token_verdict` (buy and sell simulation, owner
+powers, taxes and deployer history; answers allow, review or block with a reason), `honeypot_check`, `token_safety`.
+$0.005-$0.01 a call in USDC on Base via x402 ($0.005 a verdict on a prepaid pack key); an unpaid call returns the
+invoice in the tool error. Details: [token-verdict/](token-verdict/).
+
+Claude Code: `claude mcp add --transport http cyberwarex-token-verdict https://oracle.cyberwarex.com/mcp`
+
 | Server | Tools | What it does | Price |
 |---|---|---|---|
-| [`web-access`](web-access/) | `web_fetch` `web_extract` `web_screenshot` `web_pdf` `telegram_search` `telegram_lookup` `telegram_check` `social_profile` `company_profile` | Read any web page as LLM-ready markdown (JavaScript sites too), CSS extraction, screenshots, PDFs. **Telegram search API**: find public Telegram channels, groups and bots for a topic, look up any public @name with its latest posts, check if a channel is alive or inflated, no Telegram account. Public X, TikTok, Instagram, Facebook, LinkedIn profiles and company cards by domain | $0.001–$0.01 |
-| [`defi-oracle`](defi-oracle/) | `token_safety` `honeypot_check` `contract_risk` `wallet_identity` `x_identity` `token_identity` `identity_quick` `paper_backtest` | "Is this token safe to trade?" — live buy/sell simulation, contract powers, A–F grade with evidence (Base + BSC). **New: Crypto Identity Graph** — who is behind a wallet, token or X account (age, ENS, linked X, creator history, impersonation/rug signals from 130k+ graded tokens). **3 free calls/day** with header `X-Free-Trial: 1` — try before funding a wallet | $0.001–$0.06 |
-| [`chain-data`](chain-data/) | `chain_wallet` `chain_token` `chain_price` `chain_gas` `chain_tx` `chain_ens` | EVM data across Base, Ethereum, Arbitrum, Optimism, Polygon — no RPC keys, no node | $0.002–$0.004 |
-| [`wallet-safety`](wallet-safety/) | `simulate_transaction` `decode_calldata` `decode_signature_request` `address_risk` `url_safety` | Pre-sign safety for wallet/trading agents: simulate a tx before signing, decode EIP-712/personal_sign requests (drainer flags), sanctions + scam-ledger address screening, URL phishing score. 6 chains. **3 free calls/day** per service | $0.002–$0.01 |
+| [`web-access`](web-access/) | `web_fetch` `web_extract` `web_screenshot` `web_pdf` `telegram_search` `telegram_lookup` `telegram_check` `social_profile` `company_profile` | Read any web page as LLM-ready markdown (JavaScript sites too), CSS extraction, screenshots, PDFs. **Telegram search API**: find public Telegram channels, groups and bots for a topic, look up any public @name with its latest posts, check if a channel is alive or inflated, no Telegram account. Public X, TikTok, Instagram, Facebook, LinkedIn profiles and company cards by domain | $0.001-$0.01 |
+| [`defi-oracle`](defi-oracle/) | `token_safety` `honeypot_check` `contract_risk` `wallet_identity` `x_identity` `token_identity` `identity_quick` `paper_backtest` | "Is this token safe to trade?" - live buy/sell simulation, contract powers, A-F grade with evidence (Base + BSC). **New: Crypto Identity Graph** - who is behind a wallet, token or X account (age, ENS, linked X, creator history, impersonation/rug signals from 130k+ graded tokens). **3 free calls/day** with header `X-Free-Trial: 1` - try before funding a wallet | $0.001-$0.06 |
+| [`chain-data`](chain-data/) | `chain_wallet` `chain_token` `chain_price` `chain_gas` `chain_tx` `chain_ens` | EVM data across Base, Ethereum, Arbitrum, Optimism, Polygon - no RPC keys, no node | $0.002-$0.004 |
+| [`wallet-safety`](wallet-safety/) | `simulate_transaction` `decode_calldata` `decode_signature_request` `address_risk` `url_safety` | Pre-sign safety for wallet/trading agents: simulate a tx before signing, decode EIP-712/personal_sign requests (drainer flags), sanctions + scam-ledger address screening, URL phishing score. 6 chains. **3 free calls/day** per service | $0.002-$0.01 |
 
 Retired: `council` (Agent Council) was shut down on 2026-11-04 and `voice-stt` (voice to text) on 2026-10-18; both are marked deprecated in the MCP registry. Their code stays in the repo for reference; the services no longer answer.
 
@@ -69,7 +78,7 @@ python web-access/mcp_server.py
 
 These servers **never hold keys and never pay**. An unpaid tool call returns the x402
 invoice (`x402_payment_required: true` with the full `accepts` block) so the *calling
-agent's* x402 client can sign the gasless EIP-3009 USDC authorization and retry —
+agent's* x402 client can sign the gasless EIP-3009 USDC authorization and retry -
 either through the agent's own payment stack, or by setting the `*_X_PAYMENT` env var
 with a pre-signed payment header.
 
@@ -84,8 +93,8 @@ Machine-readable catalog of everything: **https://cyberwarex.com/.well-known/x40
 | defi-oracle | `DSO_BASE_URL` | `DSO_X_PAYMENT` | `DSO_TIMEOUT` |
 | chain-data | `CHAIN_BASE_URL` | `CHAIN_X_PAYMENT` | `CHAIN_TIMEOUT` |
 
-Defaults point at the live public services — they work out of the box.
+Defaults point at the live public services - they work out of the box.
 
 ## License
 
-MIT — see [LICENSE](LICENSE). Contact: x402@cyberwarex.com
+MIT - see [LICENSE](LICENSE). Contact: x402@cyberwarex.com

@@ -1,0 +1,36 @@
+name: Publish hosted token verdict MCP (remote) to MCP Registry
+
+# 2026-11-24 board 1126-token-verdict-share: a REMOTE-only server (streamable-http URL, no package, no image).
+# Tag token-verdict-v<version> on origin (CyberPunk11147) publishes token-verdict/server.json with that version.
+on:
+  push:
+    tags: ["token-verdict-v*"]
+
+jobs:
+  publish:
+    if: github.repository_owner == 'CyberPunk11147'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write   # OIDC for mcp-publisher (proves the io.github.<owner> namespace)
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Pin version into server.json
+        run: |
+          V="${GITHUB_REF#refs/tags/token-verdict-v}"
+          cd token-verdict
+          jq --arg v "$V" '.version=$v' server.json > s.tmp && mv s.tmp server.json
+          cat server.json
+
+      - name: Install mcp-publisher
+        run: |
+          curl -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
+
+      - name: Authenticate to MCP Registry (GitHub OIDC)
+        run: ./mcp-publisher login github-oidc
+
+      - name: Publish server to MCP Registry
+        run: |
+          cd token-verdict
+          ../mcp-publisher publish

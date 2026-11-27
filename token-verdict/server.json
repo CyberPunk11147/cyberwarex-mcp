@@ -1,0 +1,27 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.CyberPunk11147/cyberwarex-token-verdict",
+  "title": "Token verdict before a trade: allow, review or block (x402)",
+  "description": "Can my agent sell this token? Buy+sell sim, owner powers, taxes: allow/review/block. x402, 0.01.",
+  "version": "1.0.0",
+  "repository": {
+    "url": "https://github.com/CyberPunk11147/cyberwarex-mcp",
+    "source": "github",
+    "subfolder": "token-verdict"
+  },
+  "websiteUrl": "https://oracle.cyberwarex.com/",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://oracle.cyberwarex.com/mcp",
+      "headers": [
+        {
+          "name": "X-Subscription-Key",
+          "description": "Optional prepaid cwx_ key (a verdict pack pays 0.005 a verdict), so calls need no per-call x402 signing. Without it each tool error carries an x402 invoice to pay.",
+          "isRequired": false,
+          "isSecret": true
+        }
+      ]
+    }
+  ]
+}
