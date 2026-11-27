@@ -77,54 +77,6 @@ def _get(path: str, params: dict) -> str:
         return r.text
 
 
-def _crowd(path: str, chain: str, token: str) -> str:
-    """Crowd Check: get the free quote, wait until it is ready, then call the paid slice with ?quote=."""
-    import time as _t
-    qid = None
-    for _ in range(12):
-        try:
-            d = requests.get(f"{BASE_URL}/v1/holders/quote", params={"chain": chain, "token": token},
-                             headers={"User-Agent": _headers()["User-Agent"]}, timeout=HTTP_TIMEOUT).json()
-        except (requests.RequestException, ValueError) as e:
-            return json.dumps({"error": "quote failed", "reason": str(e)})
-        if d.get("status") == "ready":
-            qid = d.get("quote_id"); break
-        if d.get("status") == "error" or d.get("error"):
-            return json.dumps(d)
-        _t.sleep(8)
-    if not qid:
-        return json.dumps({"error": "quote still computing - call again in a minute (no charge)"})
-    return _get(path, {"quote": qid})
-
-
-def _verdict(chain: str, token: str) -> str:
-    import time as _t
-    for _ in range(10):
-        try:
-            r = requests.get(f"{BASE_URL}/v1/holders/verdict", params={"chain": chain, "token": token},
-                             headers=_headers(), timeout=HTTP_TIMEOUT)
-        except requests.RequestException as e:
-            return json.dumps({"error": "request failed", "reason": str(e)})
-        if r.status_code != 202:
-            break
-        _t.sleep(8)                                   # computing: not charged, the same URL is simply repeated
-    else:
-        return json.dumps({"error": "still computing - call again in a minute (no charge)"})
-    return _get("/v1/holders/verdict", {"chain": chain, "token": token})
-
-
-_CROWD = {
-    "type": "object",
-    "properties": {
-        "token": {"type": "string",
-                  "description": "The token to check: a 0x contract address (Base, Ethereum, Robinhood Chain) or a Solana mint."},
-        "chain": {"type": "string", "enum": ["base", "ethereum", "robinhood", "solana"], "default": "base",
-                  "description": "Chain the token lives on: base (default), ethereum, robinhood or solana."},
-    },
-    "required": ["token"],
-}
-
-
 _ADDR = {
     "type": "object",
     "properties": {
@@ -249,37 +201,6 @@ TOOLS = [
         ),
     ),
     types.Tool(
-        name="crowd_check_verdict",
-        inputSchema=_CROWD,
-        description=(
-            "Should I touch this token? One go/no-go answer for trading bots and agents: verdict ok / caution / avoid, "
-            "a 0-100 risk score, the top reasons, and key flags - can the liquidity be pulled, is the creator a serial "
-            "launcher behind earlier rugs, what a Uniswap v4 hook may do, how much was bought in launch bundles. "
-            "Works on Base, Ethereum, Robinhood Chain and Solana; fresh launches our hunt already checked answer instantly. "
-            "Never charged while still computing. Paid per call in USDC on Base via x402 ($0.03)."
-        ),
-    ),
-    types.Tool(
-        name="crowd_check_creator",
-        inputSchema=_CROWD,
-        description=(
-            "Who is behind this token? The creator wallet, the chain of wallets that funded it (followed up to 8 hops, "
-            "so middle wallets do not hide the source), and that chain's record with us: how many earlier tokens it "
-            "launched and how many rugged within a day. Flags serial launchers. Base, Ethereum, Robinhood Chain. "
-            "Paid per call in USDC on Base via x402 ($0.02)."
-        ),
-    ),
-    types.Tool(
-        name="crowd_check_pool",
-        inputSchema=_CROWD,
-        description=(
-            "Can this token's liquidity be pulled? Who holds the pool share (burned, an ordinary wallet, a contract, a "
-            "known fake locker), and for Uniswap v4 pools what the hook may do on every trade (take a cut, set any fee, "
-            "block sells) and whether it is a launch platform's shared hook or the creator's own code. "
-            "Paid per call in USDC on Base via x402 ($0.02)."
-        ),
-    ),
-    types.Tool(
         name="paper_backtest",
         inputSchema={
             "type": "object",
@@ -296,44 +217,10 @@ TOOLS = [
             },
         },
         description=(
-            "Paper test: what would have happened if you had followed a rule on every new token Crowd Check found? Replays the rule "
+            "Paper test: what would have happened if you had followed a rule on every new token our hunt found? Replays the rule "
             "on our recorded outcomes with fees and price impact charged, and ALWAYS returns the same numbers for all tokens as a "
             "baseline, plus win rate with a 95% interval, average and median return, drawdown, crash rate and a plain verdict. "
             "Small samples are flagged. Past data only, not financial advice. Paid per call in USDC on Base via x402 ($0.05)."
-        ),
-    ),
-    types.Tool(
-        name="crowd_check_card",
-        inputSchema=_CROWD,
-        description=(
-            "The plain card for a token: who holds the supply, who can pull the pool, who holds powers over the token, and the largest sensible "
-            "position, under 900 characters, with a verdict go, caution or no_go. A token too new or of unknown age is never a go. Base, Ethereum, "
-            "Robinhood Chain, Solana. Not financial advice. Paid per call in USDC on Base via x402 ($0.10)."
-        ),
-    ),
-    types.Tool(
-        name="watch_start",
-        inputSchema={
-            "type": "object",
-            "properties": {
-                "chain": {"type": "string", "enum": ["base", "ethereum", "robinhood", "solana"], "default": "base"},
-                "token": {"type": "string", "description": "Token contract address (or Solana mint)."},
-                "hours": {"type": "integer", "default": 24, "description": "How long to watch, 1 to 168 hours."},
-            },
-            "required": ["token"],
-        },
-        description=(
-            "Start a watch on a token and get a ticket. Poll it with watch_poll for plain alerts: pool liquidity down 30 percent, price down 50 percent, "
-            "creator balance down 50 percent, measured from the best level since the watch began. Refused, with no charge, when the token has no market data. "
-            "Paid per call in USDC on Base via x402 ($0.10)."
-        ),
-    ),
-    types.Tool(
-        name="watch_poll",
-        inputSchema={"type": "object", "properties": {"ticket": {"type": "string", "description": "The ticket from watch_start."}}, "required": ["ticket"]},
-        description=(
-            "Ask a watch what changed since the last look. Returns plain-language alerts, or none if nothing moved. Not charged when market data is "
-            "unavailable or the watch expired. Paid per call in USDC on Base via x402 ($0.01)."
         ),
     ),
     types.Tool(
@@ -373,22 +260,6 @@ def _dispatch(name: str, args: dict) -> str:
         return _get("/v1/identity/x", {"handle": str((args or {}).get("handle", "")).lstrip("@")})
     if name == "token_identity":
         return _get("/v1/identity/token", {"address": a, "chain": "base"})
-    if name in ("crowd_check_verdict", "crowd_check_creator", "crowd_check_pool", "crowd_check_card"):
-        tok, ch = str((args or {}).get("token", "")).strip(), (args or {}).get("chain", "base")
-        if not tok:
-            return json.dumps({"error": "token is required"})
-        if ch != "solana":
-            tok = tok.lower()
-        if name == "crowd_check_verdict":
-            return _verdict(ch, tok)
-        return _crowd({"crowd_check_creator": "/v1/holders/creator", "crowd_check_card": "/v1/holders/card"}.get(name, "/v1/holders/pool"), ch, tok)
-    if name == "watch_start":
-        tok, ch = str((args or {}).get("token", "")).strip(), (args or {}).get("chain", "base")
-        if not tok:
-            return json.dumps({"error": "token is required"})
-        return _get("/v1/watch/start", {"chain": ch, "token": tok if ch == "solana" else tok.lower(), "hours": int((args or {}).get("hours") or 24)})
-    if name == "watch_poll":
-        return _get("/v1/watch/poll", {"ticket": str((args or {}).get("ticket", "")).strip()})
     if name == "paper_backtest":
         a_ = dict(args or {})
         params = {k: v for k, v in a_.items() if k in ("preset", "horizon", "chain", "bankroll", "size_pct", "min_liq", "max_liq", "farm", "lp",

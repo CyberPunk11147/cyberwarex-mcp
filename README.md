@@ -35,15 +35,11 @@ Claude Code: `claude mcp add --transport http cyberwarex-domain https://domain.c
 | Server | Tools | What it does | Price |
 |---|---|---|---|
 | [`web-access`](web-access/) | `web_fetch` `web_extract` `web_screenshot` `web_pdf` `telegram_search` `telegram_lookup` `telegram_check` `social_profile` `company_profile` | Read any web page as LLM-ready markdown (JavaScript sites too), CSS extraction, screenshots, PDFs. **Telegram search API**: find public Telegram channels, groups and bots for a topic, look up any public @name with its latest posts, check if a channel is alive or inflated, no Telegram account. Public X, TikTok, Instagram, Facebook, LinkedIn profiles and company cards by domain | $0.001–$0.01 |
-| [`defi-oracle`](defi-oracle/) | `token_safety` `honeypot_check` `contract_risk` `wallet_identity` `x_identity` `token_identity` `identity_quick` `crowd_check_verdict` `crowd_check_card` `watch_start` `watch_poll` | "Is this token safe to trade?" — live buy/sell simulation, contract powers, A–F grade with evidence (Base + BSC). **New: Crypto Identity Graph** — who is behind a wallet, token or X account (age, ENS, linked X, creator history, impersonation/rug signals from 130k+ graded tokens). **3 free calls/day** with header `X-Free-Trial: 1` — try before funding a wallet | $0.001–$0.06 |
+| [`defi-oracle`](defi-oracle/) | `token_safety` `honeypot_check` `contract_risk` `wallet_identity` `x_identity` `token_identity` `identity_quick` `paper_backtest` | "Is this token safe to trade?" — live buy/sell simulation, contract powers, A–F grade with evidence (Base + BSC). **New: Crypto Identity Graph** — who is behind a wallet, token or X account (age, ENS, linked X, creator history, impersonation/rug signals from 130k+ graded tokens). **3 free calls/day** with header `X-Free-Trial: 1` — try before funding a wallet | $0.001–$0.06 |
 | [`chain-data`](chain-data/) | `chain_wallet` `chain_token` `chain_price` `chain_gas` `chain_tx` `chain_ens` | EVM data across Base, Ethereum, Arbitrum, Optimism, Polygon — no RPC keys, no node | $0.002–$0.004 |
 | [`wallet-safety`](wallet-safety/) | `simulate_transaction` `decode_calldata` `decode_signature_request` `address_risk` `url_safety` | Pre-sign safety for wallet/trading agents: simulate a tx before signing, decode EIP-712/personal_sign requests (drainer flags), sanctions + scam-ledger address screening, URL phishing score. 6 chains. **3 free calls/day** per service | $0.002–$0.01 |
 
 Retired: `council` (Agent Council) was shut down on 2026-11-04 and `voice-stt` (voice to text) on 2026-10-18; both are marked deprecated in the MCP registry. Their code stays in the repo for reference; the services no longer answer.
-
-## Recipe: verdict before the swap, watch after the buy
-
-A runnable x402 example for trading agents: [`recipes/swap_guard.py`](recipes/swap_guard.py). One call says go, caution or avoid before the swap ($0.03); after the buy a watch alerts on a pool drain or a price collapse ($0.10 to start, $0.01 a poll). First calls can be tried free with `X-Free-Trial: 1` (3 a day per IP). Not financial advice.
 
 ## Install
 
